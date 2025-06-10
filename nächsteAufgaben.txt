@@ -1,6 +1,9 @@
-sesssions stattt cookies nutzen
-session id bzw code die sesssion identifieziert cracken
+2fa ermöglichen
 
+release 1.0.0 --> 2fa mit simplen qrcode auf seite die man manuell anzeigen muss und dann nach registrierung und login durchführen
 
+release 1.1.0 --> 2fa mit qrcode als bestandteil der registrierung --> 2fa pflicht für jeden nutzer
 
-ithub repo und findings automatisiert finden mit selenium
+releas 1.2.0 --> 2fa als wahl nach login durchführbar (wahl)
+
+release 2.0.0 --> 2fa mit E-Mail
