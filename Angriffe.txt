@@ -1,0 +1,78 @@
+XSS-Angriffe: (Cross-Site-Scripting)
+
+    1. Stored XSS == Der schädliche Code wird in der Datenbank gespeichert und bei jedem Seitenaufruf ausgeliefert.
+
+    -->über ein Formular einschleusen, damit gespeichert und später automatisch immer und immer wieder ausgeführt wird
+    (z.B. "Neues Ticket erstellen") --> Title-Feld
+
+
+
+    2. Reflected XSS == sendest schädlichen JavaScript-Code über die URL und der Server gibt ihn ungefiltert zurück
+
+    --> Einziges Beispiel auf meiner Website: Register-Page --> Erfolgreiches Registrieren:
+    Die Message-Info "Register was successful. You can now login with your Username:mat and your created Password." wird über URL zur Verfügung gestellt:
+        http://192.168.0.108:5000/login?success=Register%20was%20successful.%20You%20can%20now%20login%20with%20your%20Username:mat%20and%20your%20created%20Password.
+    --> Diese manipulieren zu z.B.:
+     http://192.168.0.108:5000/login?success=<script>alert('Reflected XSS')</script>
+    bzw. http://192.168.0.108:5000/login?success=%3Cscript%3Ealert(%27Reflected%20XSS%27)%3C/script%3E
+
+
+
+    3. DOM-based XSS == Angriff erfolgt direkt im Browser durch unsichere JavaScript-Manipulation der Seite, nicht über den Server.
+    --> nichts dazu
+
+
+
+    4. HTML Injection (indirekter Angriff) == schädlicher HTML/CSS Code in Formularfelder einschleusen und Seite zerstären
+
+    Beispiele:
+        - <b style="color:red;font-size:50px;">BIG RED TEXT</b>         --> funktioniert auch bei Formular mit DB-Anbindung
+
+        - <img src="x" onerror="alert('Image XSS')">                    --> funktioniert nur bei Formular ohne DB-Anbindung (faq-seite -->Frage stellen)
+        - <input onfocus="alert('Focus XSS')" autofocus>                -->Achtung!! macht Seite kaputt für Sitzung
+
+
+
+Typisches Ziel von XSS:
+
+Stehlen von Cookies oder Login-Daten
+
+Anzeigen von Fake-Login-Masken
+
+Umleitung auf andere Webseiten
+
+Aktionen im Namen des eingeloggten Users ausführen (Session Hijacking)
+
+
+
+
+SQL-Injections:
+    Beispiel-Payloads:
+
+        Einfacher Apostroph-Test: '                   --> kann einen Fehler auslösen, wenn die Eingabe nicht ordnungsgemäß behandelt wird
+
+        Wahrheitswert-Injection:                       --> manipulieren die SQL-Abfrage so, dass sie immer wahr wird und daher alle Daten abgerufen werden
+        ' OR 1=1 --
+        ' OR 'a'='a
+        ' OR 1=1#
+        ' OR 1=1/*
+
+        Kommentar-Injection:                        --> kommentieren den Rest der SQL-Abfrage aus, sodass alles nach dem Kommentar ignoriert wird und potenziell gefährliche Daten extrahiert werden
+        ' --
+        ' #
+
+        Union-Based SQL Injection:
+        ' UNION SELECT null, null, null --                              --> versuchen, zusätzliche Daten (z.B. aus anderen Tabellen) zu extrahieren, indem sie UNION SELECT verwenden. 
+                                                                            Wenn mehr als eine Tabelle vorhanden ist, können sie durch Anpassen der Anzahl von null-Werten zusätzliche Daten erhalten
+        ' UNION SELECT username, password FROM users --                 --> versucht, Benutzernamen und Passwörter aus einer Tabelle zu extrahieren (ersetze die Tabelle und Spalten nach Bedarf)
+
+Weitere Herangehensweisen:
+    - Blind SQL Injection
+    - Error-Based SQL Injection
+    - Advanced SQL Injection Payloads
+    - Unicode-basierte Payloads
+
+
+    Bei Benutzername: ' OR 1=1 -- '
+
+

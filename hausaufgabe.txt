@@ -1,0 +1,88 @@
+app soll:
+
+    funktion bzw gui um neue tickets anzulegen --> add new ticket und remove ticket
+
+
+als nächstes: 
+* Einstellung Proxy auf Browser, z.B. mit Foxy Proxy, oder manuell.
+* Handhabung von Burb mit Webpage, Interference on off
+* Einloggen über SQL Injection mit Burp.
+* Anzeige von Logins und Passwörtern von allen Users auf Webpage durch SQL Injection.
+
+    - zeigen website mit burpe testen/hacken
+
+    - was ist ein cross site script --> wo könnte man das reinsetzen --> gemacht
+
+    - sql-injection möglichkeiten
+                
+    - cookies stehlen oder was kann man da machen
+    - cookie klau ist auch wichtig für nächstes mal !!
+
+
+                mit crosssitescript meint er ein javascript dass man als injection in ein formularfeld macht --> z.b ein img einbinden dass dann eigebunde wird anstatt dem namen
+                burpe login daten ändern sodass man pw ändert um einzuloggen --> funktioniert muss nur darauf achten, dass burp proxy listener auf ip eingestellt ist, auf der website angezeigt wird !!
+                sql injcetion vorbereiten mit der man alle daten aus db anzeigt will er !! --> alle user und pw logins anzeigt
+                man kann noch viel mehr machen --> informieren
+                seqencer, intercepter, sql injection, repeater in burpe handhaben
+                z.b sql injectioon wie login mit derk'# und irein pw und es geht durch --> fragen warum funktioniert chat????
+                was ist das für eine sql injection
+                oder mit derk' --  oder derk` -- -->mit hochkomma und leerzeichen hinten und dazwischen
+                query überlegen der mit union alle pw und user anzeigt auf website für sql injection --> deshabl eine admin page machen für den admin benutzer
+                was ich dazu brauhee eine page /admin page zur anzeige aller user und passwörter!!
+                --> im falle dass nur ein gewählicher user angezigt wird wird nur seine infos angezeigt
+                sql injection soll eine davon aufjedenfall alle user und pw anzeigen damit !!!
+                so wie bei aufzeichnung bei 1:03 std dass es ausgeführt wird direkt !!
+                auch nä#chste woche in dem feld auf seite meine tickets soll in einem feld zum beispiel im titel oder in descritption feld sollen alle passwörter mit sql injection stehen !!!
+
+                
+                brute force auf website machen --> informieren wie das geht
+                wenn mit brute force erfolgreich auf website gekommen ist dann
+                -->
+                mit selenium ein passwortliste einbinden und automatisiert testen lassen an website
+                mit hydra ausprobieren
+
+                mit crossitescript ein cookie zu schicken!!!
+                --> document.write() und noch ein img tag noch und an img hängt cookie hinten dran
+
+                und dann später mit crossitscipt ein keylogger schicken !!
+
+
+
+                mit brute force vorgehen ist selenium oder srapy gemeint !! mit zusatz von burpe?
+
+
+
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login_page():
+    if request.method == "POST":
+        print("post")
+
+        username = request.form.get("username").strip()         # strip()--> entfernt Leerzeichen (oder Whitespace-Zeichen wie \n, \t) am Anfang und Ende eines Strings
+        password = request.form.get("password").strip()
+
+        print(username, password)
+
+        query_stmt = f"select username, is_admin from bugusers where username = '{username}' and password = '{password}'"
+        print(query_stmt)
+        result = db.session.execute(text(query_stmt))
+        buguser = result.fetchone()
+
+        if not buguser:
+            print("kein user und passwort in db dazu")
+            msg = "no user with this credentials found. False Username or Passwor. Try again"
+            return render_template("login.html", msg=msg)
+        else:
+            print("hat geklappt")
+            # Cookie um Login-Daten zu speichern
+            resp = redirect("/tickets")
+            resp.set_cookie("name", username)
+
+            isAdmin = "True" if buguser.is_admin else "False"
+            resp.set_cookie("isAdmin", isAdmin)
+            
+            return resp
+            #return redirect(url_for("tickets_page"))
+       
+    return render_template("login.html")

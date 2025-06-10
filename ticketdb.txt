@@ -1,0 +1,40 @@
+141.87.28.11
+
+sudo mysql -u root -p
+
+create database testdb;
+
+show databases;
+
+use testdb;
+
+
+alter table testitems add column priority INT not null;
+alter table testitems add column username VARCHAR(30) not null;
+alter table testitems add column title VARCHAR(64) not null;
+alter table testitems add column description VARCHAR(128) not null;
+
+create table testusers(id int not null auto_increment, primary key(id));
+alter table testusers add column username varchar(30) not null;
+alter table testusers add column email_address varchar(50) not null;
+alter table testusers add column password varchar(60) not null;
+
+
+ALTER TABLE testusers ADD UNIQUE (username);
+ALTER TABLE testusers ADD UNIQUE (email_address);
+
+INSERT INTO testitems (id, priority, username, title, description) VALUES (1, 2, 'Luke', 'GUI Problem', 'GUI really not working');
+INSERT INTO testitems (id, priority, username, title, description) VALUES (2, 2, 'Nat', 'Backend Problem', 'Backend not starting');
+INSERT INTO testitems (id, priority, username, title, description) VALUES (3, 3, 'Anakin', 'Totally Broke', 'Nothing works out');
+
+
+INSERT INTO testusers (id, username, email_address, password) VALUES (1, 'Derk', 'de@alb.de', 'pass');
+INSERT INTO testusers (id, username, email_address, password) VALUES (2, 'Natalie', 'na@alb.de', 'pass');
+INSERT INTO testusers (id, username, email_address, password) VALUES (3, 'Anaking', 'an@alb.de', 'pass');
+
+CREATE USER 'testuser'@'%' IDENTIFIED WITH mysql_native_password BY 'Heute0000';
+GRANT INSERT, SELECT, DELETE, DROP, UPDATE on testdb.* TO 'testuser'@'%';
+
+select * from testitems where username='Luke';
+
+show grants for 'testuser'@'%';

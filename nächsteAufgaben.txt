@@ -1,0 +1,6 @@
+sesssions stattt cookies nutzen
+session id bzw code die sesssion identifieziert cracken
+
+
+
+ithub repo und findings automatisiert finden mit selenium

