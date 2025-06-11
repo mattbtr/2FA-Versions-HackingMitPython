@@ -7,6 +7,7 @@ import time
 import pyotp
 import io
 import qrcode
+import base64
 
 # Globale Variable zum Speichern von fehlgeschlagenen Logins (Brute Force Schutz)
 failed_logins = defaultdict(list)       # Schema: {ip:[timestamp1, timestamp2, timestamp3, ...], ip2: [...]}
@@ -71,15 +72,11 @@ def register_page():
             db.session.commit()
             print(result)
 
-            # Bei ERfolg bekommt User eine Meldung auf Login_page mit Meldung von success
-            success= f"Register was successful. You can now login with your Username:{username} and your created Password."
-            print(success)
-            # bei redirect können keine extra variablen übergeben werden wie bei render_template, 
-            # deshalb wird hier success variable im link mit übergeben im request-header --> so kann daten im link in login.html übergeben werden und eingbunden werden
-            return redirect(f"/login?success={success}")    # !! könnte man auch mit cookie machen !!
-                                                            #resp = make_response(redirect("/login"))
-                                                            #resp.set_cookie("success", success, max_age=5)  # läuft nach 5 Sekunden ab
-                                                            #return resp
+            # Secret in Session speichern (nicht dauerhaft)
+            session['temp_user'] = username
+            session['totp_secret'] = totp_secret
+
+            return redirect("/setup2fa")
         
         # wenn passwort nicht übereinstimmt
         if password1 != password2:
@@ -304,28 +301,35 @@ def log_key():
     return jsonify({"status":"logged"}), 200
         
 
-@app.route("/setup2fa")
+@app.route("/setup2fa", methods=["GET", "POST"])
 def setup_2fa():
-    if not session.get("username"):
-        return redirect("/login")
+    if 'temp_user' not in session or 'totp_secret' not in session:
+        return redirect('/register')
     
-    # Hol Benuzter und totp_secret
-    user = session["username"]
-    query = text("select totp_secret from bugusers where username = :user")
-    result = db.session.execute(query, {"user": user}).fetchone()
+    temp_user = session.get("temp_user")
+    secret = session.get("totp_secret")
+    totp = pyotp.TOTP(secret)
+    totp_uri = totp.provisioning_uri(name=temp_user, issuer_name="HackingWithPythonApp")
 
-    if not result or not result.totp_secret:
-        return "TOTP not set."
-    
-    totp_uri = pyotp.totp.TOTP(result.totp_secret).provisioning_uri(name=user, issuer_name="BugBountyApp")
-
-    # Qr Code erzeugen
+    # QR-Code als Base64-Bild generieren
     img = qrcode.make(totp_uri)
     buf = io.BytesIO()
-    img.save(buf)
-    buf.seek(0)
+    img.save(buf, format='PNG')
+    img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
 
-    return send_file(buf, mimetype="image/png")
+    if request.method == 'POST':
+        code = request.form['totp_code']
+        if totp.verify(code):
+            # 2FA ist abgeschlossen
+            # Bei ERfolg bekommt User eine Meldung auf Login_page mit Meldung von success
+            success= f"Register was successful. You can now login with your Username:{temp_user} and your created Password."
+            print(success)           
+            return redirect(f"/login?success={success}")    
+
+        else:
+            return "Falscher Code", 400
+
+    return render_template('setup2fa.html', qrcode_image=img_b64)
 
 @app.route("/verify2fa", methods=["GET", "POST"])
 def verify2fa_page():
