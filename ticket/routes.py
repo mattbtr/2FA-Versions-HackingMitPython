@@ -322,7 +322,7 @@ def setup_2fa():
         if totp.verify(code):
             # 2FA ist abgeschlossen
             # Bei ERfolg bekommt User eine Meldung auf Login_page mit Meldung von success
-            success= f"Register was successful. You can now login with your Username:{temp_user} and your created Password."
+            success= f"Register was successful. You can now login with your Username:{temp_user} and your created Password and your Authenticator App."
             print(success)           
             return redirect(f"/login?success={success}")    
 
