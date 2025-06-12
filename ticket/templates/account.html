@@ -61,10 +61,33 @@ Meine Account-Daten
     background-color: #0dcaf0;
     color: #000;
   }
+
+  .error-box {
+    color: red;
+    background-color: black;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 15px;
+  }
 </style>
 
 <div class="tickets-container">
   <h1>🎫 Einsehbare Account-Konten von: {{ loggedName }}</h1>
+
+  {% if request.args.msg %}
+      <div class="error-box">
+        {{ request.args.msg }}
+      </div>
+    {% endif %}
+
+    {% if not has_2fa %}
+  <div class="text-center mt-4">
+    <a href="{{ url_for('setup_2fa') }}" class="btn btn-outline-info">
+      🔐 Zwei-Faktor-Authentifizierung aktivieren
+    </a>
+  </div>
+  <p></p>
+  {% endif %}
 
   <table class="table table-hover">
     <thead>
@@ -84,5 +107,8 @@ Meine Account-Daten
       {% endfor %}
     </tbody>
   </table>
+
+  
+
 </div>
 {% endblock %}
