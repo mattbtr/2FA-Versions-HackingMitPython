@@ -8,19 +8,32 @@ import pyotp
 import io
 import qrcode
 import base64
+import smtplib
+import random
+from email.mime.text import MIMEText
+
+def send_email_code(receiver_email, code):
+    sender_email = "m.beiterhhh@gmail.com"
+    sender_password = "ubkp lell xvbh nnqd"  # Achtung: am besten aus .env laden
+
+    msg = MIMEText(f"Dein Login-Code lautet: {code}")
+    msg['Subject'] = "Dein 2FA-Code"
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(sender_email, sender_password)
+        server.send_message(msg)
 
 # Globale Variable zum Speichern von fehlgeschlagenen Logins (Brute Force Schutz)
 failed_logins = defaultdict(list)       # Schema: {ip:[timestamp1, timestamp2, timestamp3, ...], ip2: [...]}
 MAX_ATTEMPTS = 5
 LOCKOUT_SECONDS = 300  # 5 Minuten
 
-# Route für Homepage auf "http://127.0.0.1:5000/"
 @app.route("/")
 def home_page():
-    # laden der home.html
     return render_template("home.html")
 
-# Route für Tickets auf "http://127.0.0.1:5000/tickets"
 @app.route("/tickets")
 def tickets_page():
     # Überprüfen ob Session vorhanden (also eingeloggt):
@@ -36,7 +49,6 @@ def tickets_page():
     #z.b. [(1, "Anmeldung fehlschlägt", "Offen", "2024-12-01"), (2, "Seite lädt langsam", "In Bearbeitung", "2024-12-05"), ...]
 
     print(items)
-
     return render_template("tickets.html", items=items)  # tickets.html wird geladen und es stellt Variable items und name zur Verfügung in tickets.html zum Einbinden
 
 
@@ -59,10 +71,7 @@ def register_page():
             return render_template("register.html", failure=failure)
 
         # Wenn Passwörter übereinstimmen --> Registrierung erfolgreich und Formulardaten in DB speichern
-        if password1 == password2:
-
-            
-            # parametriesiertes Statement, damit sicher gegen SQL-Injection
+        if password1 == password2:           
             queryStmt = text("Insert into bugusers(username, email_address, password, is_admin) values(:username, :email, :password, :is_admin)")     
             result = db.session.execute(queryStmt, {
                 "username": username,
@@ -70,15 +79,14 @@ def register_page():
                 "password": password1,
                 "is_admin": isAdmin
             })
-            # Ohne Commit werden Daten nicht gespeichert in DB
             db.session.commit()
             print(result)
 
-            session['username'] = username
-            session['isAdmin'] = bool(isAdmin)
+            #session['username'] = username
+            #session['isAdmin'] = bool(isAdmin)
 
-            msg = f"Scihern sie ihren Account bitte mit der 2FA-Aktivierung!"
-            return redirect(f"/account?msg={msg}")
+            success = f"Registrierung erfolgreich. Melden Sie sich bitte erneut an. Sie müssen bei jedem Login mit ihrer E-Mail bestätigen!"
+            return redirect(f"/login?success={success}")
     
     if request.method == "GET":
     ## Anzeigen der register-Page und nichts weiter
@@ -109,7 +117,7 @@ def login_page():
             return render_template("login.html", msg=msg) 
 
         # Schritt 2: Login-Versuch prüfen
-        query_stmt = text("select username, is_admin, totp_secret from bugusers where username = :username and password = :password")
+        query_stmt = text("select username, is_admin, email_address from bugusers where username = :username and password = :password")
         print(query_stmt)
         result = db.session.execute(query_stmt, {"username": username, "password": password})
         buguser = result.fetchone()
@@ -133,11 +141,18 @@ def login_page():
             # session mit kennzeichnung dass admin ist
             session['isAdmin'] = isAdmin
 
-            if buguser.totp_secret:
-                return redirect(url_for("verify2fa_page"))
+            if buguser:
+                email = buguser.email_address
+                code = str(random.randint(100000, 999999))
+                session["pending_2fa_user"] = username
+                session["2fa_code"] = code
+                session["2fa_email"] = email
+            
+                send_email_code(email, code)
+
+                return redirect("/verify-email-2fa")
             else:
-                session["2fa_verified"] = True
-                return redirect(url_for("tickets_page"))            
+                return "Login fehlgeschlagen", 401           
        
     return render_template("login.html")
 
@@ -275,12 +290,7 @@ def account_page():
         users = result.fetchall()                       # konvertiert ergebnis in Liste mit Tupeln 
         print(users)
 
-        # Prüfen, ob aktueller User 2FA hat
-        totp_query = text("SELECT totp_secret FROM bugusers WHERE username = :username")
-        result = db.session.execute(totp_query, {"username": loggedName}).first()
-        has_2fa = result.totp_secret is not None if result else False
-
-        return render_template("account.html", users=users, loggedName=loggedName, has_2fa=has_2fa)  # account.html wird geladen und es stellt Variable users und name zur Verfügung in account.html zum Einbinden
+        return render_template("account.html", users=users, loggedName=loggedName)  # account.html wird geladen und es stellt Variable users und name zur Verfügung in account.html zum Einbinden
     
 
 @app.route("/faq", methods=["GET", "POST"])
@@ -307,77 +317,31 @@ def log_key():
     with open('keylog.txt', 'a') as f:
         f.write(f"{datetime.datetime.now()} - {key}\n")
     return jsonify({"status":"logged"}), 200
-        
 
-@app.route("/setup2fa", methods=["GET", "POST"])
-def setup_2fa():
-    username = session.get("username")
-    # checken noch ob eingeloogt mit session username
-    if "totp_secret" not in session:
-        session["totp_secret"] = pyotp.random_base32()
-    totp_secret = session["totp_secret"]
-            
-    totp = pyotp.TOTP(totp_secret)
-    totp_uri = totp.provisioning_uri(name=username, issuer_name="HackingWithPythonApp")
 
-    # QR-Code als Base64-Bild generieren
-    img = qrcode.make(totp_uri)
-    buf = io.BytesIO()
-    img.save(buf, format='PNG')
-    img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+@app.route("/verify-email-2fa", methods=["GET", "POST"])
+def verify_email_2fa():
+    if request.method == "POST":
+        input_code = request.form.get("code")
+        real_code = session.get("2fa_code")
+        username = session.get("pending_2fa_user")
 
-    if request.method == 'POST':
-        code = request.form['totp_code']
-        if totp.verify(code):
-            # 2FA ist abgeschlossen
-            query = text("UPDATE bugusers SET totp_secret = :secret WHERE username = :username")
-            db.session.execute(query, {"secret": totp_secret, "username": username})
-            db.session.commit()
+        if input_code == real_code:
+            # Erfolgreich -> session setzen
+            user = db.session.execute(
+                text("SELECT * FROM bugusers WHERE username = :u"),
+                {"u": username}
+            ).fetchone()
+            session["username"] = username
+            session["isAdmin"] = user.is_admin
 
-            # Session löschen, um nicht versehentlich mehrfach zu verwenden
-            session.pop("totp_secret", None)
+            # Aufräumen
+            session.pop("2fa_code", None)
+            session.pop("pending_2fa_user", None)
+            session.pop("2fa_email", None)
 
-            # Bei ERfolg bekommt User eine Meldung auf Login_page mit Meldung von success
-            success= f"2FA-Setup was successful. You can now login with your Username:{username},your created Password and your Verification-Code."
-            print(success)           
-            return redirect(f"/login?success={success}")    
-
+            return redirect("/account")
         else:
             return "Falscher Code", 400
 
-    return render_template('setup2fa.html', qrcode_image=img_b64)
-
-@app.route("/verify2fa", methods=["GET", "POST"])
-def verify2fa_page():
-
-    username = session.get("username")
-    if not username:
-        return redirect(url_for("login_page"))
-    
-    # Hole das totp_secret aus DB
-    stmt = text("SELECT totp_secret FROM bugusers WHERE username = :username")
-    result = db.session.execute(stmt, {"username": username})
-    user = result.fetchone()
-
-    if user is None:
-        return redirect(url_for("login_page"))
-
-    totp_secret = user.totp_secret
-
-    # Wenn der User KEIN 2FA eingerichtet hat → direkt einloggen
-    if not totp_secret:
-        session["2fa_verified"] = True
-        return redirect(url_for("tickets_page"))
-
-    # Wenn 2FA eingerichtet ist → Code-Abfrage
-    if request.method == "POST":
-        token = request.form["token"]
-        totp = pyotp.TOTP(totp_secret)
-
-        if totp.verify(token):
-            session["2fa_verified"] = True
-            return redirect(url_for("tickets_page"))
-        else:
-            return render_template("verify2fa.html", msg="Ungültiger Code. Bitte erneut versuchen.")
-
-    return render_template("verify2fa.html")
+    return render_template("verify_2fa_email.html")

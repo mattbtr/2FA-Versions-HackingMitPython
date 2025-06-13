@@ -80,14 +80,7 @@ Meine Account-Daten
       </div>
     {% endif %}
 
-    {% if not has_2fa %}
-  <div class="text-center mt-4">
-    <a href="{{ url_for('setup_2fa') }}" class="btn btn-outline-info">
-      🔐 Zwei-Faktor-Authentifizierung aktivieren
-    </a>
-  </div>
-  <p></p>
-  {% endif %}
+    
 
   <table class="table table-hover">
     <thead>

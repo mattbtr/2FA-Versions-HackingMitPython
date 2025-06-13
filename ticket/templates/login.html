@@ -99,9 +99,9 @@ Login
     </div>
   {% endif %}
 
-  {% if msg %}                   
+  {% if request.args.msg %}                   
     <div style="color: red; background-color: lightcoral; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-      {{ msg }}                       
+      {{ request.args.msg }}                       
     </div>
   {% endif %}
 
