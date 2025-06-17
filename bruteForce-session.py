@@ -3,7 +3,7 @@ import flask
 # uneingeloggt
 default_cookie = '.eJyrVjJKS9QtSy3KTMtMTVGyKikqTdUBicWji2UWO6bkZuYpWSm5JeYUpyrpKJXklxTEF6cmF6WWAEVDzIOiQp1dw5yMo3zCzHydnSPdHUONgwMDXDyDAoI8I4EaSotTi_ISc1OBqktSi0tAXKVaACkuKyQ.aFD9QQ.nnkUoBQhMPfomWkuC8brWOJMDqE'
 # eingeloggt
-session_cookie = 'eyIyZmFfdmVyaWZpZWQiOnRydWUsImlzQWRtaW4iOiJGYWxzZSIsInVzZXJuYW1lIjoidGVzdHVzZXIifQ.aFEJiA.7SD1cd2T6SN6JYXdPxLdxHzUvsk'
+session_cookie = 'eyJ1c2VyX2lkIjo1LCJ1c2VybmFtZSI6IlRlc3QifQ.aFEQTw.sELOjbMoPkQUt1kS3HbsbPdZW9E'
 
 wordlist = "10k-most-common.txt"
 
