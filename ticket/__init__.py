@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 # Secret Key für Nutzung von Sessions!! --> Nicht öffentlich machen in Repo in Praxis
-app.secret_key = 'secret-key-session-hola'
+app.secret_key = 'hello'
 
 # Konfiguration um auf Datenbank Zugriff zu erhalten (Anmeldedaten)
 app.config["SQLALCHEMY_DATABASE_URI"] ="mysql+pymysql://ticketdb_user:Heute0000@127.0.0.1/ticketdb"
