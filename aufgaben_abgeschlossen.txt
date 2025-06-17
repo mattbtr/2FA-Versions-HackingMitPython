@@ -1,0 +1,30 @@
+* Verwendung von Session statt Cookie.
+
+--> Cookies durch session ersetzt in routes.py
+
+* Fix gegen Brute Force
+
+--> Rate-Limiting für Loginversuche eingebaut (max. X Versuche pro IP in Y Sekunden).
+--> Sperre des Accounts nach zu vielen Fehlversuchen (temporär oder bis Reaktivierung).
+
+
+* Implementierung von zwei Faktor Auth.
+
+--> Wahl um 2 auth hinzuzufügen (nach setup bei jedem login )
+--> keine pflicht
+
+
+* Fix gegen SQL Injection
+
+--> Alle Datenbankabfragen auf Parameterbindung mit SQLAlchemy oder `text(...).bindparams(...)` umgestellt.
+--> Keine Verwendung mehr von `f-Strings`
+
+
+* Fix gegen XSS
+
+--> User-Eingaben werden beim Rendern escaped (z. B. via `{{ variable }}` in Jinja2)
+--> ||safe - wurde entfernt
+
+
+
+TODO --> Fix gegen Brute Force mit @Delimiter machen !!!!!!!

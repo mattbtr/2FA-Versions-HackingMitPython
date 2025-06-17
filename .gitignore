@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 # Ignoriere Python Bytecode
 __pycache__/
 *.pyc
+=======
+*/__pycache__/
+*__init__.cpython-313.pyc
+*routes.cpython-313.pyc
+>>>>>>> release/1.2.0
