@@ -28,3 +28,5 @@
 
 
 TODO --> Fix gegen Brute Force mit @Delimiter machen !!!!!!!
+Flask-Limiter ist eine Flask-Erweiterung zur Begrenzung der Anzahl an Requests, die ein Benutzer (oder IP) an eine Route senden darf.
+

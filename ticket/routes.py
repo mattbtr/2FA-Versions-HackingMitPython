@@ -8,6 +8,11 @@ import pyotp
 import io
 import qrcode
 import base64
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# Limiter an deine Flask-App binden
+limiter = Limiter(get_remote_address, app=app)
 
 # Globale Variable zum Speichern von fehlgeschlagenen Logins (Brute Force Schutz)
 failed_logins = defaultdict(list)       # Schema: {ip:[timestamp1, timestamp2, timestamp3, ...], ip2: [...]}
@@ -84,8 +89,9 @@ def register_page():
     ## Anzeigen der register-Page und nichts weiter
         return render_template("register.html")
 
-
+# Rate-Limit für Login definieren: 5 Versuche pro 5 Minuten
 @app.route("/login", methods=["GET", "POST"])
+#@limiter.limit("5 per 5 minutes") # oder z.B. "10 per hour", "2/second"        --> bibliothek um einfacher brute force schutz zu implementieren als Alternative zu eigenen Implementierung
 def login_page():
     if request.method == "POST":
         print("post")
